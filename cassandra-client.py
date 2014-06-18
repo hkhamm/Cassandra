@@ -60,10 +60,10 @@ class CassandraClient:
         self.session.execute('CREATE TABLE IF NOT EXISTS %s (%s);' % (table, columns))
         log.info('Table %s created.' % table)
 
-    def load_data(self, table, columns, values):
+    def insert_data(self, table, columns, values):
         """
-        Loads data into a table.
-        :param table: is the name of the table to load data into.
+        Inserts data into a table.
+        :param table: is the name of the table to insert data into.
         :param columns: is a comma separated string of column names.
         :param values: is a string of values corresponding to the columns.
         """
@@ -142,7 +142,7 @@ client.create_table('simplex.songs',
                     artist text,
                     tags set<text>
                     """)
-client.load_data('simplex.songs',
+client.insert_data('simplex.songs',
                  'id, title, album, artist, tags',
                  """
                  756716f7-2e54-4715-9f00-91dcbea6cf50,
@@ -183,7 +183,7 @@ client.close()
 #         """)
 #         log.info('Simplex keyspace and schema created.')
 #
-#     def load_data(self):
+#     def insert_data(self):
 #         self.session.execute("""
 #             INSERT INTO simplex.songs (id, title, album, artist, tags)
 #             VALUES (
@@ -229,7 +229,7 @@ client.close()
 #             """)
 #         log.info('Statements prepared.')
 #
-#     def load_data(self):
+#     def insert_data(self):
 #         tags = {'jazz', '2013'}
 #         self.session.execute(self.insert_song_prepared_statement,
 #                              [UUID("756716f7-2e54-4715-9f00-91dcbea6cf50"),
