@@ -20,7 +20,7 @@ class CassandraClient:
     def connect(self, nodes):
         """
         Creates a connection with the database.
-        :param nodes: is an array of IP address or URLs corresponding to Cassandra nodes
+        :param nodes: is an array of IP addresses or URLs corresponding to Cassandra nodes
         """
         cluster = Cluster(nodes)
         metadata = cluster.metadata
@@ -74,7 +74,7 @@ class CassandraClient:
         """
         Query a table for information.
         :param table: is the name of the table to query.
-        :param args: is a key value pair with syntax: 'key = value'.
+        :param args: is an optional conditional key value pair with syntax: 'key = value'
         """
         query = 'SELECT * FROM %s' % table
         if len(args) > 0:
