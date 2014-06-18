@@ -10,7 +10,12 @@ class CassandraClient:
     """
     A command line client for connecting to and modifying a Cassandra database.
     """
-    session = None
+
+    def __init__(self):
+        """
+        Constructor.
+        """
+        self.session = None
 
     def connect(self, nodes):
         """
@@ -124,6 +129,7 @@ class CassandraClient:
             print("%-30s\t%-20s\t%-20s" % (row.title, row.album, row.artist))
 
 
+# A test driver.
 logging.basicConfig()
 client = CassandraClient()
 client.connect(['ec2-54-200-175-168.us-west-2.compute.amazonaws.com'])
