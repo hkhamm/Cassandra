@@ -2,9 +2,6 @@ from uuid import UUID
 from cassandra.cluster import Cluster
 import logging
 
-log = logging.getLogger()
-log.setLevel('INFO')
-
 
 class CassandraClient:
     """
@@ -15,6 +12,9 @@ class CassandraClient:
         """
         Constructor.
         """
+        self.log = logging.getLogger()
+        self.log.setLevel('INFO')
+        logging.basicConfig()
         self.session = None
 
     def connect(self, nodes):
@@ -25,9 +25,9 @@ class CassandraClient:
         cluster = Cluster(nodes)
         metadata = cluster.metadata
         self.session = cluster.connect()
-        log.info('Connected to cluster: ' + metadata.cluster_name)
+        self.log.info('Connected to cluster: ' + metadata.cluster_name)
         for host in metadata.all_hosts():
-            log.info('Datacenter: %s; Host: %s; Rack: %s',
+            self.log.info('Datacenter: %s; Host: %s; Rack: %s',
                      host.datacenter, host.address, host.rack)
 
     def close(self):
@@ -35,7 +35,7 @@ class CassandraClient:
         Closes the connection to the database.
         """
         self.session.cluster.shutdown()
-        log.info('Connection closed.')
+        self.log.info('Connection closed.')
 
     def create_keyspace(self, keyspace, strategy, replication_factor):
         """
@@ -49,7 +49,7 @@ class CassandraClient:
             CREATE KEYSPACE IF NOT EXISTS {0:s} WITH replication = {{'class':{1:s}, 'replication_factor':{2:s}}};
             """.format(keyspace, strategy, replication_factor)
         )
-        log.info('Keyspace %s created.' % keyspace)
+        self.log.info('Keyspace %s created.' % keyspace)
 
     def create_table(self, table, columns):
         """
@@ -58,7 +58,7 @@ class CassandraClient:
         :param columns: is a comma separated string of column names.
         """
         self.session.execute('CREATE TABLE IF NOT EXISTS %s (%s);' % (table, columns))
-        log.info('Table %s created.' % table)
+        self.log.info('Table %s created.' % table)
 
     def insert_data(self, table, columns, values):
         """
@@ -68,7 +68,7 @@ class CassandraClient:
         :param values: is a string of values corresponding to the columns.
         """
         self.session.execute('INSERT INTO %s (%s) VALUES (%s);' % (table, columns, values))
-        log.info('Data loaded into table %s.' % table)
+        self.log.info('Data loaded into table %s.' % table)
 
     def query_table(self, table, *args):
         """
@@ -82,7 +82,7 @@ class CassandraClient:
         query += ';'
         results = self.session.execute_async(query)
         results.add_callbacks(self.print_results, self.print_errors)
-        log.info('Table %s queried.' % table)
+        self.log.info('Table %s queried.' % table)
 
     def update_table(self, table, set_value, condition):
         """
@@ -92,7 +92,7 @@ class CassandraClient:
         :param condition: is the table condition that must be met.
         """
         self.session.execute('UPDATE %s SET %s WHERE %s;' % (table, set_value, condition))
-        log.info('Table %s updated.' % table)
+        self.log.info('Table %s updated.' % table)
 
     def drop_keyspace(self, keyspace):
         """
@@ -100,7 +100,7 @@ class CassandraClient:
         :param keyspace: is the keyspace to drop.
         """
         self.session.execute('DROP KEYSPACE IF EXISTS %s;' % keyspace)
-        log.info('Keyspace %s dropped.' % keyspace)
+        self.log.info('Keyspace %s dropped.' % keyspace)
 
     def drop_table(self, table):
         """
@@ -108,14 +108,14 @@ class CassandraClient:
         :param table: is the name of the table to drop.
         """
         self.session.execute('DROP TABLE IF EXISTS %s;' % table)
-        log.info('Table %s dropped.' % table)
+        self.log.info('Table %s dropped.' % table)
 
     def print_errors(self, errors):
         """
         Prints errors to log.error
         :param errors: are the errors to print.
         """
-        log.error(errors)
+        self.log.error(errors)
 
     def print_results(self, results):
         """
@@ -130,7 +130,6 @@ class CassandraClient:
 
 
 # A test driver.
-logging.basicConfig()
 client = CassandraClient()
 client.connect(['ec2-54-200-175-168.us-west-2.compute.amazonaws.com'])
 client.create_keyspace('simplex', "'SimpleStrategy'", '3')
