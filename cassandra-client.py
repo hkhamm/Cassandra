@@ -1,16 +1,22 @@
 from uuid import UUID
 from cassandra.cluster import Cluster
 import logging
-import time
 
 log = logging.getLogger()
 log.setLevel('INFO')
 
 
 class CassandraClient:
+    """
+    A command line client for connecting to and modifying a Cassandra database.
+    """
     session = None
 
     def connect(self, nodes):
+        """
+        Creates a connection with the database.
+        :param nodes: is an array of IP address or URLs corresponding to Cassandra nodes
+        """
         cluster = Cluster(nodes)
         metadata = cluster.metadata
         self.session = cluster.connect()
@@ -20,10 +26,19 @@ class CassandraClient:
                      host.datacenter, host.address, host.rack)
 
     def close(self):
+        """
+        Closes the connection to the database.
+        """
         self.session.cluster.shutdown()
         log.info('Connection closed.')
 
     def create_keyspace(self, keyspace, strategy, replication_factor):
+        """
+        Creates a new keyspace in the database.
+        :param keyspace: is the keyspace to create; must be a string.
+        :param strategy: is the strategy class, i.e. 'SimpleStrategy'; must be string in quotes.
+        :param replication_factor: is the number of nodes in the replication cluster; must be an integer.
+        """
         self.session.execute(
             """
             CREATE KEYSPACE IF NOT EXISTS {0:s} WITH replication = {{'class':{1:s}, 'replication_factor':{2:s}}};
@@ -32,14 +47,30 @@ class CassandraClient:
         log.info('Keyspace %s created.' % keyspace)
 
     def create_table(self, table, columns):
+        """
+        Creates a new table in the database.
+        :param table: is the new table's name; must be a string.
+        :param columns: is a comma separated string of column names.
+        """
         self.session.execute('CREATE TABLE IF NOT EXISTS %s (%s);' % (table, columns))
         log.info('Table %s created.' % table)
 
     def load_data(self, table, columns, values):
+        """
+        Loads data into a table.
+        :param table: is the name of the table to load data into.
+        :param columns: is a comma separated string of column names.
+        :param values: is a string of values corresponding to the columns.
+        """
         self.session.execute('INSERT INTO %s (%s) VALUES (%s);' % (table, columns, values))
         log.info('Data loaded into table %s.' % table)
 
     def query_table(self, table, *args):
+        """
+        Query a table for information.
+        :param table: is the name of the table to query.
+        :param args: is a key value pair with syntax: 'key = value'.
+        """
         query = 'SELECT * FROM %s' % table
         if len(args) > 0:
             query += ' WHERE %s' % args[0]  # WHERE key = value
@@ -48,22 +79,44 @@ class CassandraClient:
         results.add_callbacks(self.print_results, self.print_errors)
         log.info('Table %s queried.' % table)
 
-    def update_table(self, table, set_value, where_value):
-        self.session.execute('UPDATE %s SET %s WHERE %s;' % (table, set_value, where_value))
+    def update_table(self, table, set_value, condition):
+        """
+        Updates a table with the provided values, where a condition is met.
+        :param table: is the name of the table to update.
+        :param set_value: is the value to set.
+        :param condition: is the table condition that must be met.
+        """
+        self.session.execute('UPDATE %s SET %s WHERE %s;' % (table, set_value, condition))
         log.info('Table %s updated.' % table)
 
     def drop_keyspace(self, keyspace):
+        """
+        Drops a keyspace from the database.
+        :param keyspace: is the keyspace to drop.
+        """
         self.session.execute('DROP KEYSPACE IF EXISTS %s;' % keyspace)
         log.info('Keyspace %s dropped.' % keyspace)
 
     def drop_table(self, table):
+        """
+        Drops a table from the database.
+        :param table: is the name of the table to drop.
+        """
         self.session.execute('DROP TABLE IF EXISTS %s;' % table)
         log.info('Table %s dropped.' % table)
 
     def print_errors(self, errors):
+        """
+        Prints errors to log.error
+        :param errors: are the errors to print.
+        """
         log.error(errors)
 
     def print_results(self, results):
+        """
+        Prints results to the command line.
+        :param results: are the results to print.
+        """
         print("%-30s\t%-20s\t%-20s\n%s" %
               ("title", "album", "artist",
                "-------------------------------+-----------------------+--------------------"))
