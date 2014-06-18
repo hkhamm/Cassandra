@@ -28,7 +28,7 @@ class CassandraClient:
         self.log.info('Connected to cluster: ' + metadata.cluster_name)
         for host in metadata.all_hosts():
             self.log.info('Datacenter: %s; Host: %s; Rack: %s',
-                     host.datacenter, host.address, host.rack)
+                          host.datacenter, host.address, host.rack)
 
     def close(self):
         """
@@ -142,14 +142,14 @@ client.create_table('simplex.songs',
                     tags set<text>
                     """)
 client.insert_data('simplex.songs',
-                 'id, title, album, artist, tags',
-                 """
-                 756716f7-2e54-4715-9f00-91dcbea6cf50,
-                 'La Petite Tonkinoise',
-                 'Bye Bye Blackbird',
-                 'Joséphine Baker',
-                 {'jazz', '2013'}
-                 """)
+                   'id, title, album, artist, tags',
+                   """
+                   756716f7-2e54-4715-9f00-91dcbea6cf50,
+                   'La Petite Tonkinoise',
+                   'Bye Bye Blackbird',
+                   'Joséphine Baker',
+                   {'jazz', '2013'}
+                   """)
 client.query_table('simplex.songs')
 # client.query_table('simplex.songs', 'id = 2cc9ccb7-6221-4ccb-8387-f22b6a1b354d')
 client.drop_keyspace('simplex')
@@ -157,7 +157,7 @@ client.close()
 
 
 # class SimpleClient(CassandraClient):
-#     def create_schema(self):
+# def create_schema(self):
 #         self.session.execute(
 #             """CREATE KEYSPACE simplex WITH replication = {'class':'SimpleStrategy', 'replication_factor':3};""")
 #         self.session.execute("""
